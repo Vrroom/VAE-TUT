@@ -1,5 +1,5 @@
 # Generate data as specified in README.md
-# python3 generateData.py <fileName> <numberOfPoints> <seed>
+# python3 generateData.py <fileName> <numberOfPoints>
 import sys
 import numpy as np
 

@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from visualize import AnimatedScatter
 
 def klDivergence(logvar, mean) : 
     var = torch.exp(logvar) 
@@ -82,11 +83,11 @@ def main () :
 
     qOpt = torch.optim.Adam(
             q.parameters(), 
-            lr=4e-2,
+            lr=4e-3,
             weight_decay=1e-6)
     pOpt = torch.optim.Adam(
             p.parameters(), 
-            lr=4e-2,
+            lr=4e-3,
             weight_decay=1e-6)
 
     data = torch.tensor(np.loadtxt(fname)).float()
@@ -95,7 +96,7 @@ def main () :
     reconLoss = []
     klLoss = []
     lbLoss = []
-
+    zs = []
     for epoch in range(epochs) :
         qOpt.zero_grad()
         pOpt.zero_grad()
@@ -120,11 +121,12 @@ def main () :
         qOpt.step()
         pOpt.step()
 
-        print("Epoch: ", epoch, ", Variational LB: ", lb.item(), ", KL: ", kl.item(), ", Recon: ", term1.item())
+        print("Epoch: %d, Variational LB: %5.2f, KL: %5.2f, Recon: %5.2f" %(epoch,lb.item(), kl.item(), term1.item()))
 
         reconLoss.append(term1.item())
         klLoss.append(kl.item())
         lbLoss.append(lb.item())
+        zs.append(z.detach().numpy())
 
 
     plt.plot(list(range(epochs)), reconLoss, c='b', label="Conditional")
@@ -134,6 +136,9 @@ def main () :
     plt.xlabel("Epochs")
     plt.ylabel("Variational Lower Bound")
     plt.legend(loc="lower right")
+    plt.show()
+
+    a = AnimatedScatter(zs)
     plt.show()
 
     torch.save(p.state_dict(), 'p.pkl')
